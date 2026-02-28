@@ -88,6 +88,7 @@ class Cart(models.Model):
 
 
 # Модель "Элемент корзины"
+# Модель "Элемент корзины"
 class CartItem(models.Model):
     корзина = models.ForeignKey(
         Cart, 
@@ -110,14 +111,18 @@ class CartItem(models.Model):
     
     def clean(self):
         """Проверяет, что количество не превышает количество на складе"""
-    from django.core.exceptions import ValidationError
+        from django.core.exceptions import ValidationError
+        
+        # Проверяем что товар и количество установлены
+        if self.товар and self.количество:
+            if self.количество > self.товар.количество_на_складе:
+                raise ValidationError(
+                    f'Недостаточно товара на складе. Доступно: {self.товар.количество_на_складе}'
+                )
     
-    # Проверяем что товар и количество установлены
-    if self.товар and self.количество:
-        if self.количество > self.товар.количество_на_складе:
-            raise ValidationError(
-                f'Недостаточно товара на складе. Доступно: {self.товар.количество_на_складе}'
-            )
+    class Meta:
+        verbose_name = "Элемент корзины"
+        verbose_name_plural = "Элементы корзины"
     
     class Meta:
         verbose_name = "Элемент корзины"
