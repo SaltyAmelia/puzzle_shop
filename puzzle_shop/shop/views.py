@@ -120,3 +120,148 @@ def about(request):
 
 def author(request):
     return render(request, 'shop/author.html')
+
+from io import BytesIO
+from openpyxl import Workbook
+from django.core.mail import send_mail
+from django.http import HttpResponse
+from django.conf import settings
+from .forms import CheckoutForm
+from .models import Order, OrderItem
+
+# Оформление заказа
+@login_required
+def checkout(request):
+    """Страница оформления заказа"""
+    
+    # Получаем корзину пользователя
+    try:
+        cart = Cart.objects.get(пользователь=request.user)
+        cart_items = CartItem.objects.filter(корзина=cart)
+    except Cart.DoesNotExist:
+        return redirect('product_list')
+    
+    # Если корзина пуста, редирект
+    if not cart_items.exists():
+        return redirect('cart_view')
+    
+    if request.method == 'POST':
+        form = CheckoutForm(request.POST)
+        if form.is_valid():
+            # Создаём заказ
+            order = form.save(commit=False)
+            order.пользователь = request.user
+            
+            # Вычисляем общую стоимость
+            total = sum(item.стоимость_элемента() for item in cart_items)
+            order.общая_стоимость = total
+            order.save()
+            
+            # Копируем товары из корзины в заказ
+            for item in cart_items:
+                OrderItem.objects.create(
+                    заказ=order,
+                    товар=item.товар,
+                    количество=item.количество,
+                    цена=item.товар.цена
+                )
+            
+            # Генерируем и отправляем чек
+            send_receipt(order)
+            
+            # Очищаем корзину
+            cart_items.delete()
+            
+            # Показываем сообщение об успехе
+            return render(request, 'shop/order_success.html', {'order': order})
+    else:
+        form = CheckoutForm()
+    
+    # Вычисляем итоговую сумму
+    total = sum(item.стоимость_элемента() for item in cart_items)
+    
+    context = {
+        'form': form,
+        'cart_items': cart_items,
+        'total': total,
+    }
+    return render(request, 'shop/checkout.html', context)
+
+
+def send_receipt(order):
+    """Генерирует и отправляет чек по email"""
+    
+    # Создаём Excel файл
+    workbook = Workbook()
+    worksheet = workbook.active
+    worksheet.title = "Чек заказа"
+    
+    # Заголовок
+    worksheet['A1'] = f"ЧЕК ЗАКАЗА №{order.id}"
+    worksheet['A2'] = f"Дата: {order.дата_заказа.strftime('%d.%m.%Y %H:%M')}"
+    worksheet['A3'] = f"Покупатель: {order.пользователь.username}"
+    
+    # Таблица товаров
+    worksheet['A5'] = "Товар"
+    worksheet['B5'] = "Количество"
+    worksheet['C5'] = "Цена"
+    worksheet['D5'] = "Сумма"
+    
+    row = 6
+    for item in order.товары.all():
+        worksheet[f'A{row}'] = item.товар.название
+        worksheet[f'B{row}'] = item.количество
+        worksheet[f'C{row}'] = float(item.цена)
+        worksheet[f'D{row}'] = float(item.стоимость_позиции())
+        row += 1
+    
+    # Итого
+    worksheet[f'A{row + 1}'] = "ИТОГО:"
+    worksheet[f'D{row + 1}'] = float(order.общая_стоимость)
+    
+    # Информация о доставке
+    worksheet[f'A{row + 3}'] = "Адрес доставки:"
+    worksheet[f'A{row + 4}'] = order.адрес_доставки
+    worksheet[f'A{row + 5}'] = f"Телефон: {order.телефон}"
+    
+    # Сохраняем файл в памяти
+    excel_file = BytesIO()
+    workbook.save(excel_file)
+    excel_file.seek(0)
+    
+    # Отправляем email
+    subject = f"Ваш чек заказа №{order.id}"
+    message = f"""
+    Здравствуйте, {order.пользователь.username}!
+    
+    Спасибо за ваш заказ №{order.id}.
+    Общая сумма: {order.общая_стоимость} руб.
+    
+    Адрес доставки: {order.адрес_доставки}
+    Телефон: {order.телефон}
+    
+    Ваш чек прикреплён к этому письму.
+    """
+    
+    # Отправляем письмо с чеком
+    from django.core.mail import EmailMessage
+    
+    email = EmailMessage(
+        subject=subject,
+        body=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        to=[order.пользователь.email],
+    )
+    
+    # Прикрепляем Excel файл
+    email.attach(
+        f'receipt_{order.id}.xlsx',
+        excel_file.getvalue(),
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    
+    try:
+        email.send()
+        print(f"Чек успешно отправлен на {order.пользователь.email}")
+    except Exception as e:
+        print(f"Ошибка при отправке чека: {e}")

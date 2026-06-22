@@ -47,7 +47,7 @@
 
 <br>
 <a href="{% url 'product_list' %}" class="btn">Продолжить покупки</a>
-{% else %}
+<a href="{% url 'checkout' %}" class="btn" style="background-color: #2ecc71;">Оформить заказ</a>{% else %}
 <p>Корзина пуста</p>
 <a href="{% url 'product_list' %}" class="btn">Перейти в каталог</a>
 {% endif %}

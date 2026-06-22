@@ -1,6 +1,5 @@
 from django.contrib import admin
-from .models import Category, Manufacturer, Product, Cart, CartItem
-
+from .models import Category, Manufacturer, Product, Cart, CartItem, Order, OrderItem
 # Регистрация модели "Категория"
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
@@ -40,3 +39,21 @@ class CartAdmin(admin.ModelAdmin):
 @admin.register(CartItem)
 class CartItemAdmin(admin.ModelAdmin):
     list_display = ['товар', 'корзина', 'количество', 'стоимость_элемента']
+
+    # Inline для товаров в заказе
+class OrderItemInline(admin.TabularInline):
+    model = OrderItem
+    extra = 0
+
+# Регистрация модели "Заказ"
+@admin.register(Order)
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ['id', 'пользователь', 'дата_заказа', 'статус', 'общая_стоимость']
+    list_filter = ['статус', 'дата_заказа']
+    search_fields = ['пользователь__username', 'адрес_доставки']
+    inlines = [OrderItemInline]
+
+# Регистрация модели "Товар в заказе"
+@admin.register(OrderItem)
+class OrderItemAdmin(admin.ModelAdmin):
+    list_display = ['заказ', 'товар', 'количество', 'цена']

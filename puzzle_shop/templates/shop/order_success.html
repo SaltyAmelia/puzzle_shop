@@ -1,0 +1,31 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Заказ успешно оформлен{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin-top: 50px;">
+    <h1>✅ Заказ успешно оформлен!</h1>
+    
+    <p style="font-size: 18px; margin-top: 20px;">
+        Спасибо за ваш заказ №<strong>{{ order.id }}</strong>
+    </p>
+    
+    <div style="background: #f0f0f0; padding: 20px; border-radius: 5px; margin-top: 30px; max-width: 600px; margin-left: auto; margin-right: auto;">
+        <h3>Детали заказа:</h3>
+        <p><strong>Сумма:</strong> {{ order.общая_стоимость }} руб.</p>
+        <p><strong>Адрес доставки:</strong> {{ order.адрес_доставки }}</p>
+        <p><strong>Телефон:</strong> {{ order.телефон }}</p>
+        <p><strong>Дата заказа:</strong> {{ order.дата_заказа|date:"d.m.Y H:i" }}</p>
+        <p><strong>Статус:</strong> {{ order.get_статус_display }}</p>
+    </div>
+    
+    <div style="margin-top: 30px;">
+        <p>Чек отправлен на вашу электронную почту:</p>
+        <p><strong>{{ user.email }}</strong></p>
+    </div>
+    
+    <div style="margin-top: 50px;">
+        <a href="{% url 'product_list' %}" class="btn">Продолжить покупки</a>
+    </div>
+</div>
+{% endblock %}

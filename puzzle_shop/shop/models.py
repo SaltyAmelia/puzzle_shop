@@ -122,3 +122,71 @@ class CartItem(models.Model):
     class Meta:
         verbose_name = "Элемент корзины"
         verbose_name_plural = "Элементы корзины"
+        
+# Модель "Заказ"
+class Order(models.Model):
+    # Константы для статусов заказа
+    STATUS_CHOICES = [
+        ('pending', 'В ожидании'),
+        ('completed', 'Завершен'),
+        ('cancelled', 'Отменен'),
+    ]
+    
+    пользователь = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name="Пользователь"
+    )
+    адрес_доставки = models.TextField(verbose_name="Адрес доставки")
+    телефон = models.CharField(max_length=20, verbose_name="Телефон")
+    дата_заказа = models.DateTimeField(auto_now_add=True, verbose_name="Дата заказа")
+    статус = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending',
+        verbose_name="Статус"
+    )
+    общая_стоимость = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Общая стоимость"
+    )
+    
+    def __str__(self):
+        return f"Заказ #{self.id} - {self.пользователь.username}"
+    
+    class Meta:
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
+
+
+# Модель "Товар в заказе"
+class OrderItem(models.Model):
+    заказ = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name='товары',
+        verbose_name="Заказ"
+    )
+    товар = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        verbose_name="Товар"
+    )
+    количество = models.PositiveIntegerField(verbose_name="Количество")
+    цена = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        verbose_name="Цена"
+    )
+    
+    def __str__(self):
+        return f"{self.товар.название} в заказе #{self.заказ.id}"
+    
+    def стоимость_позиции(self):
+        """Вычисляет стоимость этой позиции"""
+        return self.цена * self.количество
+    
+    class Meta:
+        verbose_name = "Товар в заказе"
+        verbose_name_plural = "Товары в заказах"

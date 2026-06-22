@@ -123,3 +123,17 @@ MEDIA_ROOT = BASE_DIR / 'media'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
 LOGIN_URL = '/accounts/login/'
+
+# Используем console backend для тестирования (печатает в консоль)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'  # Для реального сервера
+
+# Если используете реальный SMTP (например, Яндекс):
+# EMAIL_HOST = 'smtp.yandex.ru'
+# EMAIL_PORT = 465
+# EMAIL_USE_SSL = True
+# EMAIL_HOST_USER = 'your_email@yandex.ru'
+# EMAIL_HOST_PASSWORD = 'your_password'
+
+DEFAULT_FROM_EMAIL = 'noreply@puzzle-shop.ru'

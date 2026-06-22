@@ -1,0 +1,65 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Оформление заказа{% endblock %}
+
+{% block content %}
+<h1>📦 Оформление заказа</h1>
+
+<div style="display: flex; gap: 30px; margin-top: 30px;">
+    <!-- Левая колонка: товары -->
+    <div style="flex: 1;">
+        <h2>Ваш заказ</h2>
+        <table style="width: 100%;">
+            <thead>
+                <tr style="background: #f2f2f2;">
+                    <th style="padding: 10px;">Товар</th>
+                    <th style="padding: 10px;">Количество</th>
+                    <th style="padding: 10px;">Цена</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in cart_items %}
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 10px;">{{ item.товар.название }}</td>
+                    <td style="padding: 10px;">{{ item.количество }}</td>
+                    <td style="padding: 10px;">{{ item.стоимость_элемента }} руб.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h3 style="text-align: right; margin-top: 20px;">Итого: {{ total }} руб.</h3>
+    </div>
+
+    <!-- Правая колонка: форма -->
+    <div style="flex: 1;">
+        <h2>Ваши данные</h2>
+        <form method="post">
+            {% csrf_token %}
+            
+            <div style="margin-bottom: 15px;">
+                <label for="{{ form.адрес_доставки.id_for_label }}">Адрес доставки:</label><br>
+                {{ form.адрес_доставки }}
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <label for="{{ form.телефон.id_for_label }}">Телефон:</label><br>
+                {{ form.телефон }}
+            </div>
+            
+            {% if form.non_field_errors %}
+                <div style="color: red; margin-bottom: 15px;">
+                    {{ form.non_field_errors }}
+                </div>
+            {% endif %}
+            
+            <button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 16px;">
+                Подтвердить заказ
+            </button>
+        </form>
+        
+        <p style="margin-top: 20px;">
+            <a href="{% url 'cart_view' %}">← Вернуться в корзину</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
