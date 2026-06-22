@@ -1,0 +1,54 @@
+{% extends 'shop/base.html' %}
+
+{% block title %}Корзина{% endblock %}
+
+{% block content %}
+<h1>🛒 Моя корзина</h1>
+
+{% if cart_items %}
+<table>
+    <thead>
+        <tr>
+            <th>Товар</th>
+            <th>Цена</th>
+            <th>Количество</th>
+            <th>Стоимость</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in cart_items %}
+        <tr>
+            <td>
+                <a href="{% url 'product_detail' item.товар.id %}">{{ item.товар.название }}</a>
+            </td>
+            <td>{{ item.товар.цена }} руб.</td>
+            <td>
+                <form method="post" action="{% url 'update_cart' item.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <input type="number" name="quantity" value="{{ item.количество }}" min="1" max="{{ item.товар.количество_на_складе }}" style="width: 60px;">
+                    <button type="submit" class="btn">Обновить</button>
+                </form>
+            </td>
+            <td><strong>{{ item.стоимость_элемента }} руб.</strong></td>
+            <td>
+                <a href="{% url 'remove_from_cart' item.id %}" class="btn btn-danger" onclick="return confirm('Удалить товар?')">Удалить</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="3"><strong>Итого:</strong></td>
+            <td colspan="2"><strong>{{ total }} руб.</strong></td>
+        </tr>
+    </tfoot>
+</table>
+
+<br>
+<a href="{% url 'product_list' %}" class="btn">Продолжить покупки</a>
+{% else %}
+<p>Корзина пуста</p>
+<a href="{% url 'product_list' %}" class="btn">Перейти в каталог</a>
+{% endif %}
+{% endblock %}

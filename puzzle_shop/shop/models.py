@@ -88,7 +88,6 @@ class Cart(models.Model):
 
 
 # Модель "Элемент корзины"
-# Модель "Элемент корзины"
 class CartItem(models.Model):
     корзина = models.ForeignKey(
         Cart, 
@@ -119,10 +118,6 @@ class CartItem(models.Model):
                 raise ValidationError(
                     f'Недостаточно товара на складе. Доступно: {self.товар.количество_на_складе}'
                 )
-    
-    class Meta:
-        verbose_name = "Элемент корзины"
-        verbose_name_plural = "Элементы корзины"
     
     class Meta:
         verbose_name = "Элемент корзины"
