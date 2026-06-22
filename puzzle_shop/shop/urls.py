@@ -1,6 +1,18 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
 
+#  REST API ROUTER 
+router = DefaultRouter()
+router.register(r'api/categories', views.CategoryViewSet, basename='category')
+router.register(r'api/manufacturers', views.ManufacturerViewSet, basename='manufacturer')
+router.register(r'api/products', views.ProductViewSet, basename='product')
+router.register(r'api/carts', views.CartViewSet, basename='cart')
+router.register(r'api/cart-items', views.CartItemViewSet, basename='cart-item')
+router.register(r'api/orders', views.OrderViewSet, basename='order')
+router.register(r'api/order-items', views.OrderItemViewSet, basename='order-item')
+
+#  WEB МАРШРУТЫ 
 urlpatterns = [
     path('', views.index, name='index'),
     path('about/', views.about, name='about'),
@@ -18,4 +30,7 @@ urlpatterns = [
     
     # Заказ
     path('checkout/', views.checkout, name='checkout'),
+    
+    # REST API URLs
+    path('', include(router.urls)),
 ]

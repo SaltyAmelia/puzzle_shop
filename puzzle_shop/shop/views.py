@@ -265,3 +265,79 @@ def send_receipt(order):
         print(f"Чек успешно отправлен на {order.пользователь.email}")
     except Exception as e:
         print(f"Ошибка при отправке чека: {e}")
+
+#REST API VIEWSETS
+
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from .serializers import (
+    CategorySerializer, ManufacturerSerializer, ProductSerializer,
+    CartSerializer, CartItemSerializer, OrderSerializer, OrderItemSerializer
+)
+
+# API для Категорий
+class CategoryViewSet(viewsets.ModelViewSet):
+    """API для CRUD операций с категориями"""
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+    permission_classes = [IsAuthenticated]
+
+
+# API для Производителей
+class ManufacturerViewSet(viewsets.ModelViewSet):
+    """API для CRUD операций с производителями"""
+    queryset = Manufacturer.objects.all()
+    serializer_class = ManufacturerSerializer
+    permission_classes = [IsAuthenticated]
+
+
+# API для Товаров
+class ProductViewSet(viewsets.ModelViewSet):
+    """API для CRUD операций с товарами"""
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    permission_classes = [IsAuthenticated]
+
+
+# API для Корзин
+class CartViewSet(viewsets.ModelViewSet):
+    """API для CRUD операций с корзинами"""
+    serializer_class = CartSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Пользователь видит только свою корзину"""
+        return Cart.objects.filter(пользователь=self.request.user)
+
+
+# API для Элементов корзины
+class CartItemViewSet(viewsets.ModelViewSet):
+    """API для CRUD операций с элементами корзины"""
+    serializer_class = CartItemSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Пользователь видит только товары в своей корзине"""
+        return CartItem.objects.filter(корзина__пользователь=self.request.user)
+
+
+# API для Заказов
+class OrderViewSet(viewsets.ModelViewSet):
+    """API для CRUD операций с заказами"""
+    serializer_class = OrderSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Пользователь видит только свои заказы"""
+        return Order.objects.filter(пользователь=self.request.user)
+
+
+# API для Элементов заказа
+class OrderItemViewSet(viewsets.ModelViewSet):
+    """API для CRUD операций с элементами заказа"""
+    serializer_class = OrderItemSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Пользователь видит только товары в своих заказах"""
+        return OrderItem.objects.filter(заказ__пользователь=self.request.user)
