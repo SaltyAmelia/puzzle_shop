@@ -1,55 +1,207 @@
 {% extends 'shop/base.html' %}
 
-{% block title %}Каталог товаров{% endblock %}
+{% block title %}Каталог товаров - Магазин головоломок{% endblock %}
 
 {% block content %}
-<h1>Каталог товаров</h1>
 
-<!-- Фильтры и поиск -->
-<div class="filter-form">
-    <form method="get">
-        <input type="text" name="search" placeholder="Поиск..." value="{{ search_query }}">
-        
-        <select name="category">
-            <option value="">Все категории</option>
-            {% for category in categories %}
-                <option value="{{ category.id }}">{{ category.название }}</option>
-            {% endfor %}
-        </select>
-        
-        <select name="manufacturer">
-            <option value="">Все производители</option>
-            {% for manufacturer in manufacturers %}
-                <option value="{{ manufacturer.id }}">{{ manufacturer.название }}</option>
-            {% endfor %}
-        </select>
-        
-        <button type="submit" class="btn">Применить</button>
-        <a href="{% url 'product_list' %}" class="btn">Сбросить</a>
-    </form>
-</div>
-
-<!-- Список товаров -->
-<div class="product-grid">
-    {% for product in products %}
-    <div class="product-card">
-        {% if product.фото_товара %}
-            <img src="{{ product.фото_товара.url }}" alt="{{ product.название }}" style="width: 100%; height: 200px; object-fit: cover;">
-        {% endif %}
-        
-        <h3>{{ product.название }}</h3>
-        <p><strong>Цена:</strong> {{ product.цена }} руб.</p>
-        <p><strong>На складе:</strong> {{ product.количество_на_складе }} шт.</p>
-        <p><small>{{ product.категория.название }}</small></p>
-        
-        <a href="{% url 'product_detail' product.id %}" class="btn">Подробнее</a>
-        
-        {% if user.is_authenticated %}
-            <a href="{% url 'add_to_cart' product.id %}" class="btn">В корзину</a>
-        {% endif %}
+<section class="py-4 bg-light border-bottom">
+    <div class="container">
+        <h1 class="mb-2">
+            <i class="fas fa-store"></i> Каталог товаров
+        </h1>
+        <p class="text-muted">Выберите интересующие вас головоломки и пазлы</p>
     </div>
-    {% empty %}
-    <p>Товары не найдены.</p>
-    {% endfor %}
+</section>
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="filter-panel">
+                <h5><i class="fas fa-filter"></i> Фильтры</h5>
+                
+                <div class="search-box">
+                    <input type="text" id="search-filter" class="form-control" 
+                           placeholder="Поиск товара..." value="{{ search_query }}">
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Категория</label>
+                    <select id="category-filter" class="form-select">
+                        <option value="">Все категории</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" 
+                                    {% if request.GET.category|stringformat:"s" == category.id|stringformat:"s" %}selected{% endif %}>
+                                {{ category.название }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Производитель</label>
+                    <select id="manufacturer-filter" class="form-select">
+                        <option value="">Все производители</option>
+                        {% for manufacturer in manufacturers %}
+                            <option value="{{ manufacturer.id }}"
+                                    {% if request.GET.manufacturer|stringformat:"s" == manufacturer.id|stringformat:"s" %}selected{% endif %}>
+                                {{ manufacturer.название }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="btn-group w-100" role="group">
+                    <button id="search-btn" class="btn btn-primary btn-sm" type="button">
+                        <i class="fas fa-search"></i> Поиск
+                    </button>
+                    <button id="reset-filters-btn" class="btn btn-outline-secondary btn-sm" type="button">
+                        <i class="fas fa-redo"></i> Сброс
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="mb-0">
+                    <i class="fas fa-boxes"></i> Найдено товаров: <span id="products-count">{{ products|length }}</span>
+                </h5>
+                <div class="sort-options">
+                    <button class="btn btn-outline-primary btn-sm active" data-sort="newest">
+                        <i class="fas fa-clock"></i> Новые
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" data-sort="price-asc">
+                        <i class="fas fa-arrow-up"></i> Цена ↑
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm" data-sort="price-desc">
+                        <i class="fas fa-arrow-down"></i> Цена ↓
+                    </button>
+                </div>
+            </div>
+            
+            <div class="row" id="products-container">
+                {% if products %}
+                    {% for product in products %}
+                    <div class="col-sm-6 col-md-4 col-lg-3 mb-4">
+                        <div class="card product-card h-100">
+                            {% if product.фото_товара %}
+                                <img src="{{ product.фото_товара.url }}" class="card-img-top" 
+                                     alt="{{ product.название }}">
+                            {% else %}
+                                <img src="/static/images/no-image.png" class="card-img-top" 
+                                     alt="Нет изображения">
+                            {% endif %}
+                            <div class="card-body d-flex flex-column">
+                                <h5 class="card-title">{{ product.название }}</h5>
+                                <p class="card-text text-muted">
+                                    {{ product.описание|truncatewords:15 }}
+                                </p>
+                                <div class="mt-auto">
+                                    <div class="product-price">{{ product.цена }} BYN</div>
+                                    <p class="text-muted small mb-3">
+                                        <i class="fas fa-cube"></i> На складе: {{ product.количество_на_складе }} шт.
+                                    </p>
+                                    <div class="btn-group w-100" role="group">
+                                        <a href="{% url 'product_detail' product.id %}" 
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-info-circle"></i> Подробнее
+                                        </a>
+                                        {% if user.is_authenticated %}
+                                            <a href="{% url 'add_to_cart' product.id %}" 
+                                               class="btn btn-primary btn-sm">
+                                                <i class="fas fa-shopping-cart"></i> В корзину
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'login' %}" 
+                                               class="btn btn-primary btn-sm">
+                                                <i class="fas fa-sign-in-alt"></i> Вход
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="col-12">
+                        <div class="alert alert-info text-center">
+                            <i class="fas fa-search fa-3x mb-3"></i>
+                            <p>Товары не найдены. Попробуйте изменить параметры поиска.</p>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            {% if page_obj %}
+            <nav aria-label="Page navigation" class="mt-5">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1">Первая</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">
+                                ← Предыдущая
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Первая</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">← Предыдущая</span>
+                        </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">
+                                Следующая →
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последняя</a>
+                        </li>
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">Следующая →</span>
+                        </li>
+                        <li class="page-item disabled">
+                            <span class="page-link">Последняя</span>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
 </div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    initializeFilters();
+    
+    document.querySelectorAll('.sort-options .btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.sort-options .btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+});
+</script>
+{% endblock %}
 {% endblock %}

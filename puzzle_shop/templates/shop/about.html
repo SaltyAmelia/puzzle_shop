@@ -1,19 +1,199 @@
 {% extends 'shop/base.html' %}
 
-{% block title %}О магазине{% endblock %}
+{% block title %}О магазине - Магазин головоломок и пазлов{% endblock %}
 
 {% block content %}
-<h1>О магазине</h1>
-<p><strong>Тема:</strong> Магазин необычных головоломок и пазлов</p>
 
-<h2>Что мы предлагаем:</h2>
-<ul>
-    <li>3D головоломки из дерева и металла</li>
-    <li>Механические пазлы</li>
-    <li>Кубики Рубика различных модификаций</li>
-    <li>Логические головоломки</li>
-    <li>Коллекционные экземпляры</li>
-</ul>
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-12 text-center">
+            <h1 class="mb-3">
+                <i class="fas fa-cube"></i> О нашем магазине
+            </h1>
+            <p class="lead text-muted">
+                Мы — специализированный интернет-магазин необычных головоломок и пазлов
+            </p>
+        </div>
+    </div>
+    
+    <div class="row mb-5">
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow h-100">
+                <div class="card-body">
+                    <h3 class="card-title text-primary mb-3">
+                        <i class="fas fa-cube"></i> Кто мы?
+                    </h3>
+                    <p class="card-text">
+                        Мы — команда увлеченных людей, которые любят головоломки и пазлы. 
+                        Наш магазин был основан с целью помочь людям развивать логику, 
+                        память и творческое мышление через интересные головоломки.
+                    </p>
+                    <p class="card-text">
+                        Каждый товар в нашем каталоге проверен нами лично, 
+                        поэтому мы гарантируем высокое качество всей продукции.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow h-100">
+                <div class="card-body">
+                    <h3 class="card-title text-primary mb-3">
+                        <i class="fas fa-star"></i> Наша миссия
+                    </h3>
+                    <p class="card-text">
+                        <strong>Сделать доступными качественные головоломки</strong> для каждого, 
+                        кто хочет развивать свои умственные способности.
+                    </p>
+                    <p class="card-text mb-0">
+                        Мы верим, что головоломки — это не только развлечение, 
+                        но и эффективный способ развития логического мышления, 
+                        пространственного воображения и творчества.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4 text-center">
+                <i class="fas fa-store"></i> Что мы предлагаем
+            </h2>
+        </div>
+    </div>
+    
+    <div class="row mb-5">
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card border-0 shadow text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-cube fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">3D Головоломки</h5>
+                    <p class="card-text text-muted">
+                        Головоломки из дерева, металла и пластика с уникальными механизмами
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card border-0 shadow text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-puzzle-piece fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Механические Пазлы</h5>
+                    <p class="card-text text-muted">
+                        Сложные и интересные механические пазлы разной сложности
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card border-0 shadow text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-square fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Кубики Рубика</h5>
+                    <p class="card-text text-muted">
+                        Классические кубики Рубика и их интересные модификации
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card border-0 shadow text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-brain fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Логические Головоломки</h5>
+                    <p class="card-text text-muted">
+                        Головоломки, требующие логического мышления и анализа
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card border-0 shadow text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-gem fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Коллекционные Экземпляры</h5>
+                    <p class="card-text text-muted">
+                        Редкие и ценные коллекционные головоломки для настоящих фанатов
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card border-0 shadow text-center h-100">
+                <div class="card-body">
+                    <i class="fas fa-gift fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Подарочные наборы</h5>
+                    <p class="card-text text-muted">
+                        Красиво оформленные наборы головоломок для подарков
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mb-5">
+        <div class="col-12">
+            <h2 class="mb-4 text-center">
+                <i class="fas fa-heart"></i> Почему выбирают нас
+            </h2>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6">
+            <ul class="list-unstyled">
+                <li class="mb-3">
+                    <i class="fas fa-check-circle text-success fa-lg"></i>
+                    <strong class="ms-2">Качество</strong>
+                    <p class="text-muted ms-4">Только проверенные товары от надежных производителей</p>
+                </li>
+                <li class="mb-3">
+                    <i class="fas fa-check-circle text-success fa-lg"></i>
+                    <strong class="ms-2">Цены</strong>
+                    <p class="text-muted ms-4">Конкурентные цены и регулярные скидки</p>
+                </li>
+                <li class="mb-3">
+                    <i class="fas fa-check-circle text-success fa-lg"></i>
+                    <strong class="ms-2">Выбор</strong>
+                    <p class="text-muted ms-4">Огромный ассортимент товаров на любой вкус</p>
+                </li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <ul class="list-unstyled">
+                <li class="mb-3">
+                    <i class="fas fa-check-circle text-success fa-lg"></i>
+                    <strong class="ms-2">Доставка</strong>
+                    <p class="text-muted ms-4">Быстрая и безопасная доставка по всей стране</p>
+                </li>
+                <li class="mb-3">
+                    <i class="fas fa-check-circle text-success fa-lg"></i>
+                    <strong class="ms-2">Поддержка</strong>
+                    <p class="text-muted ms-4">Профессиональная помощь и консультации</p>
+                </li>
+                <li class="mb-3">
+                    <i class="fas fa-check-circle text-success fa-lg"></i>
+                    <strong class="ms-2">Гарантия</strong>
+                    <p class="text-muted ms-4">100% гарантия качества на все товары</p>
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+    <div class="row mt-5">
+        <div class="col-12 text-center">
+            <a href="{% url 'product_list' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-store"></i> Перейти в каталог
+            </a>
+        </div>
+    </div>
+</div>
 
-<p>Лабораторная работа №18 по Django</p>
 {% endblock %}

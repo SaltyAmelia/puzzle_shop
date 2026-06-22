@@ -1,65 +1,142 @@
 {% extends 'shop/base.html' %}
 
-{% block title %}Оформление заказа{% endblock %}
+{% block title %}Оформление заказа - Магазин головоломок{% endblock %}
 
 {% block content %}
-<h1>📦 Оформление заказа</h1>
 
-<div style="display: flex; gap: 30px; margin-top: 30px;">
-    <!-- Левая колонка: товары -->
-    <div style="flex: 1;">
-        <h2>Ваш заказ</h2>
-        <table style="width: 100%;">
-            <thead>
-                <tr style="background: #f2f2f2;">
-                    <th style="padding: 10px;">Товар</th>
-                    <th style="padding: 10px;">Количество</th>
-                    <th style="padding: 10px;">Цена</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in cart_items %}
-                <tr style="border-bottom: 1px solid #ddd;">
-                    <td style="padding: 10px;">{{ item.товар.название }}</td>
-                    <td style="padding: 10px;">{{ item.количество }}</td>
-                    <td style="padding: 10px;">{{ item.стоимость_элемента }} руб.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <h3 style="text-align: right; margin-top: 20px;">Итого: {{ total }} руб.</h3>
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-12">
+            <h1 class="mb-2">
+                <i class="fas fa-credit-card"></i> Оформление заказа
+            </h1>
+            <p class="text-muted">Заполните необходимую информацию для завершения покупки</p>
+        </div>
     </div>
-
-    <!-- Правая колонка: форма -->
-    <div style="flex: 1;">
-        <h2>Ваши данные</h2>
-        <form method="post">
-            {% csrf_token %}
-            
-            <div style="margin-bottom: 15px;">
-                <label for="{{ form.адрес_доставки.id_for_label }}">Адрес доставки:</label><br>
-                {{ form.адрес_доставки }}
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-                <label for="{{ form.телефон.id_for_label }}">Телефон:</label><br>
-                {{ form.телефон }}
-            </div>
-            
-            {% if form.non_field_errors %}
-                <div style="color: red; margin-bottom: 15px;">
-                    {{ form.non_field_errors }}
+    
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-boxes"></i> Ваш заказ
+                    </h5>
                 </div>
-            {% endif %}
+                <div class="card-body">
+                    {% for item in cart_items %}
+                    <div class="d-flex justify-content-between align-items-center pb-3 border-bottom">
+                        <div>
+                            <h6 class="mb-0">{{ item.товар.название }}</h6>
+                            <small class="text-muted">
+                                {{ item.количество }} × {{ item.товар.цена }} BYN
+                            </small>
+                        </div>
+                        <div class="fw-bold">
+                            {{ item.стоимость_элемента }} BYN
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>Подитог:</span>
+                            <span>{{ total }} BYN</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span>Доставка:</span>
+                            <span class="badge bg-success">Бесплатно</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center" style="font-size: 1.3rem;">
+                            <strong>Итого к оплате:</strong>
+                            <strong class="text-primary">{{ total }} BYN</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
             
-            <button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 16px;">
-                Подтвердить заказ
-            </button>
-        </form>
+            <a href="{% url 'product_list' %}" class="btn btn-outline-primary w-100">
+                <i class="fas fa-arrow-left"></i> Продолжить покупки
+            </a>
+        </div>
         
-        <p style="margin-top: 20px;">
-            <a href="{% url 'cart_view' %}">← Вернуться в корзину</a>
-        </p>
+        <div class="col-lg-6">
+            <div class="card border-0 shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user"></i> Ваши данные для доставки
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Имя пользователя (не редактируется)</label>
+                            <input type="text" class="form-control" value="{{ user.username }}" disabled>
+                            <small class="text-muted">Это имя указано в вашем аккаунте</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Email (не редактируется)</label>
+                            <input type="email" class="form-control" value="{{ user.email }}" disabled>
+                            <small class="text-muted">На этот адрес будет отправлен чек заказа</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.адрес_доставки.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-map-marker-alt"></i> Адрес доставки *
+                            </label>
+                            {{ form.адрес_доставки }}
+                            {% if form.адрес_доставки.errors %}
+                                <div class="text-danger small mt-2">
+                                    {{ form.адрес_доставки.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.телефон.id_for_label }}" class="form-label fw-bold">
+                                <i class="fas fa-phone"></i> Номер телефона *
+                            </label>
+                            {{ form.телефон }}
+                            {% if form.телефон.errors %}
+                                <div class="text-danger small mt-2">
+                                    {{ form.телефон.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger" role="alert">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ form.non_field_errors }}
+                            </div>
+                        {% endif %}
+                        
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="agree-terms" required>
+                            <label class="form-check-label" for="agree-terms">
+                                Я согласен с <a href="#" class="text-decoration-none">условиями доставки</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary btn-lg w-100 mb-3">
+                            <i class="fas fa-check-circle"></i> Подтвердить заказ
+                        </button>
+                        
+                        <a href="{% url 'cart_view' %}" class="btn btn-outline-secondary btn-lg w-100">
+                            <i class="fas fa-arrow-left"></i> Вернуться в корзину
+                        </a>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-4" role="alert">
+                <i class="fas fa-lock"></i> <strong>Ваши данные защищены.</strong><br>
+                Мы используем безопасное соединение и не передаем ваши личные данные третьим лицам.
+            </div>
+        </div>
     </div>
 </div>
+
 {% endblock %}

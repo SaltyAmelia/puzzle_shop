@@ -1,22 +1,195 @@
 {% extends 'shop/base.html' %}
 
-{% block title %}Главная - Магазин головоломок{% endblock %}
+{% block title %}Главная - Магазин головоломок и пазлов{% endblock %}
 
 {% block content %}
-<h1>🧩 Магазин необычных головоломок и пазлов</h1>
-<p>Добро пожаловать в наш магазин! Здесь вы найдете самые интересные головоломки.</p>
 
-<div style="margin-top: 30px;">
-    <a href="{% url 'product_list' %}" class="btn">Перейти в каталог</a>
-</div>
+<section class="hero-section">
+    <div class="container">
+        <h1><i class="fas fa-cube"></i> Магазин Головоломок и Пазлов</h1>
+        <p>Окунитесь в мир логики и приключений! Найдите идеальную головоломку для себя или в подарок.</p>
+        <a href="{% url 'product_list' %}" class="hero-btn">
+            <i class="fas fa-store"></i> Перейти в каталог
+        </a>
+    </div>
+</section>
 
-<h2>О нас</h2>
-<p>Мы специализируемся на продаже:</p>
-<ul>
-    <li>3D головоломок из различных материалов</li>
-    <li>Механических пазлов</li>
-    <li>Кубиков Рубика и их модификаций</li>
-    <li>Логических головоломок</li>
-    <li>Коллекционных экземпляров</li>
-</ul>
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">
+            <i class="fas fa-info-circle"></i> О нашем магазине
+        </h2>
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">
+                            <i class="fas fa-cube"></i> Что мы продаем?
+                        </h5>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> 3D головоломки из различных материалов</li>
+                            <li><i class="fas fa-check text-success"></i> Механические пазлы</li>
+                            <li><i class="fas fa-check text-success"></i> Кубики Рубика и их модификации</li>
+                            <li><i class="fas fa-check text-success"></i> Логические головоломки</li>
+                            <li><i class="fas fa-check text-success"></i> Коллекционные экземпляры</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4">
+                <div class="card h-100 border-0 shadow">
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">
+                            <i class="fas fa-star"></i> Почему выбирают нас?
+                        </h5>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Качественные товары от проверенных производителей</li>
+                            <li><i class="fas fa-check text-success"></i> Выгодные цены и регулярные скидки</li>
+                            <li><i class="fas fa-check text-success"></i> Быстрая доставка по всей стране</li>
+                            <li><i class="fas fa-check text-success"></i> Профессиональная поддержка и консультации</li>
+                            <li><i class="fas fa-check text-success"></i> 100% гарантия качества</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-5">
+            <i class="fas fa-folder"></i> Категории товаров
+        </h2>
+        <div class="row" id="categories-container">
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">
+            <i class="fas fa-fire"></i> Популярные товары
+        </h2>
+        <div class="row" id="popular-products">
+            <div class="spinner-container col-12">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Загрузка...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    await loadPopularProducts();
+    await loadCategories();
+});
+
+async function loadPopularProducts() {
+    try {
+        const response = await fetch('/api/products/?limit=6');
+        const data = await response.json();
+        
+        let products = [];
+        if (Array.isArray(data)) {
+            products = data;
+        } else if (data.results) {
+            products = data.results;
+        }
+        
+        products = products.slice(0, 6);
+        
+        const container = document.getElementById('popular-products');
+        if (products.length === 0) {
+            container.innerHTML = '<div class="col-12 text-center"><p>Товары пока не добавлены</p></div>';
+            return;
+        }
+        
+        const html = products.map(product => {
+            const imageUrl = product.фото_товара || '/static/images/no-image.png';
+            return `
+                <div class="col-sm-6 col-md-4 mb-4">
+                    <div class="card product-card h-100">
+                        <img src="${imageUrl}" class="card-img-top" alt="${product.название}" 
+                             onerror="this.src='/static/images/no-image.png'">
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title">${product.название}</h5>
+                            <p class="card-text text-muted">${product.описание.substring(0, 80)}...</p>
+                            <div class="mt-auto">
+                                <div class="product-price">${product.цена} BYN</div>
+                                <div class="btn-group w-100" role="group">
+                                    <a href="/catalog/${product.id}/" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-info-circle"></i> Подробнее
+                                    </a>
+                                    <button class="btn btn-primary btn-sm" onclick="addToCart(${product.id})">
+                                        <i class="fas fa-shopping-cart"></i> В корзину
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        container.innerHTML = html;
+    } catch (error) {
+        console.error('Ошибка при загрузке товаров:', error);
+        document.getElementById('popular-products').innerHTML = 
+            '<div class="col-12 text-center"><p class="text-danger">Ошибка при загрузке товаров</p></div>';
+    }
+}
+
+async function loadCategories() {
+    try {
+        const response = await fetch('/api/categories/');
+        let categories = await response.json();
+        
+        if (!Array.isArray(categories) && categories.results) {
+            categories = categories.results;
+        }
+        
+        const container = document.getElementById('categories-container');
+        
+        if (!Array.isArray(categories) || categories.length === 0) {
+            container.innerHTML = '<div class="col-12 text-center"><p>Категории не найдены</p></div>';
+            return;
+        }
+        
+        const html = categories.map(category => `
+            <div class="col-md-4 mb-4">
+                <a href="{% url 'product_list' %}?category=${category.id}" class="text-decoration-none">
+                    <div class="card h-100 border-0 shadow category-card" style="transition: all 0.3s ease;">
+                        <div class="card-body text-center p-5">
+                            <i class="fas fa-box text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="card-title mt-3 text-dark">${category.название}</h5>
+                            <p class="card-text text-muted">${category.описание || 'Нет описания'}</p>
+                            <small class="text-primary">Перейти к товарам →</small>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        `).join('');
+        
+        container.innerHTML = html;
+        
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-10px)';
+                this.style.boxShadow = '0 5px 20px rgba(0,0,0,0.2)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
+            });
+        });
+    } catch (error) {
+        console.error('Ошибка при загрузке категорий:', error);
+    }
+}
+</script>
+{% endblock %}
 {% endblock %}
