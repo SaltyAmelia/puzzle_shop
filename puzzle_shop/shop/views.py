@@ -1,11 +1,39 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, get_object_or_404, redirect
 from django.db.models import Q
-from .models import Product, Category, Manufacturer, Cart, CartItem
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.contrib.auth.models import User
+from io import BytesIO
+from openpyxl import Workbook
+from django.core.mail import send_mail, EmailMessage
+from django.http import HttpResponse
+from django.conf import settings
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status, viewsets
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
+
+from shop.models import (
+    Category, Manufacturer, Product, Cart, CartItem, 
+    Order, OrderItem, Profile
+)
+from shop.serializers import (
+    CategorySerializer, ManufacturerSerializer, ProductSerializer,
+    CartSerializer, CartItemSerializer, OrderSerializer, OrderItemSerializer,
+    ProfileSerializer, UserRegistrationSerializer
+)
+from shop.forms import CheckoutForm
+from shop.permissions import IsAdminUser, IsOwnerOrAdmin
+
+
+# ===== СТРАНИЦЫ (Views) =====
 
 # Главная страница
 def index(request):
     return render(request, 'shop/index.html')
+
 
 # Каталог товаров
 def product_list(request):
@@ -42,12 +70,14 @@ def product_list(request):
     }
     return render(request, 'shop/product_list.html', context)
 
+
 # Детальная информация о товаре
 def product_detail(request, pk):
     """Подробная информация о товаре"""
     product = get_object_or_404(Product, pk=pk)
     context = {'product': product}
     return render(request, 'shop/product_detail.html', context)
+
 
 # Добавление товара в корзину
 @login_required
@@ -73,6 +103,7 @@ def add_to_cart(request, product_id):
     
     return redirect('cart_view')
 
+
 # Обновление количества товара в корзине
 @login_required
 def update_cart(request, item_id):
@@ -89,6 +120,7 @@ def update_cart(request, item_id):
     
     return redirect('cart_view')
 
+
 # Удаление товара из корзины
 @login_required
 def remove_from_cart(request, item_id):
@@ -96,6 +128,7 @@ def remove_from_cart(request, item_id):
     cart_item = get_object_or_404(CartItem, id=item_id, корзина__пользователь=request.user)
     cart_item.delete()
     return redirect('cart_view')
+
 
 # Просмотр корзины
 @login_required
@@ -114,20 +147,15 @@ def cart_view(request):
     }
     return render(request, 'shop/cart.html', context)
 
+
 # Страницы из прошлых лаб
 def about(request):
     return render(request, 'shop/about.html')
 
+
 def author(request):
     return render(request, 'shop/author.html')
 
-from io import BytesIO
-from openpyxl import Workbook
-from django.core.mail import send_mail
-from django.http import HttpResponse
-from django.conf import settings
-from .forms import CheckoutForm
-from .models import Order, OrderItem
 
 # Оформление заказа
 @login_required
@@ -244,8 +272,6 @@ def send_receipt(order):
     """
     
     # Отправляем письмо с чеком
-    from django.core.mail import EmailMessage
-    
     email = EmailMessage(
         subject=subject,
         body=message,
@@ -266,14 +292,8 @@ def send_receipt(order):
     except Exception as e:
         print(f"Ошибка при отправке чека: {e}")
 
-#REST API VIEWSETS
 
-from rest_framework import viewsets
-from rest_framework.permissions import IsAuthenticated
-from .serializers import (
-    CategorySerializer, ManufacturerSerializer, ProductSerializer,
-    CartSerializer, CartItemSerializer, OrderSerializer, OrderItemSerializer
-)
+# ===== REST API VIEWSETS =====
 
 # API для Категорий
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -296,7 +316,7 @@ class ProductViewSet(viewsets.ModelViewSet):
     """API для CRUD операций с товарами"""
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]  
 
 
 # API для Корзин
@@ -341,3 +361,61 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         """Пользователь видит только товары в своих заказах"""
         return OrderItem.objects.filter(заказ__пользователь=self.request.user)
+
+
+# ===== АУТЕНТИФИКАЦИЯ И ПРОФИЛЬ =====
+
+class RegisterView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = UserRegistrationSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'message': 'Пользователь создан успешно'}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        try:
+            profile = request.user.profile
+        except Profile.DoesNotExist:
+            Profile.objects.create(user=request.user)
+            profile = request.user.profile
+        
+        serializer = ProfileSerializer(profile)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        try:
+            profile = request.user.profile
+        except Profile.DoesNotExist:
+            profile = Profile.objects.create(user=request.user)
+        
+        serializer = ProfileSerializer(profile, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    permission_classes = [AllowAny]
+
+
+# ===== СТРАНИЦЫ РЕГИСТРАЦИИ И ПРОФИЛЯ =====
+
+def login_view(request):
+    return render(request, 'shop/login.html')
+
+
+def register_view(request):
+    return render(request, 'shop/register.html')
+
+
+@login_required
+def profile_view(request):
+    return render(request, 'shop/profile.html')

@@ -122,7 +122,8 @@ class CartItem(models.Model):
     class Meta:
         verbose_name = "Элемент корзины"
         verbose_name_plural = "Элементы корзины"
-        
+
+
 # Модель "Заказ"
 class Order(models.Model):
     # Константы для статусов заказа
@@ -190,3 +191,22 @@ class OrderItem(models.Model):
     class Meta:
         verbose_name = "Товар в заказе"
         verbose_name_plural = "Товары в заказах"
+
+
+# Модель "Профиль пользователя"
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    phone = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
+    city = models.CharField(max_length=100, blank=True)
+    favorite_category = models.ForeignKey(Category, null=True, blank=True, on_delete=models.SET_NULL)
+    is_admin = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Профиль {self.user.username}"
+
+    class Meta:
+        verbose_name = "Профиль пользователя"
+        verbose_name_plural = "Профили пользователей"

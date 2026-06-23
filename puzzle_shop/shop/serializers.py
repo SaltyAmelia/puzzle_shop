@@ -131,3 +131,55 @@ class OrderSerializer(serializers.ModelSerializer):
             'дата_заказа', 'статус', 'общая_стоимость', 'товары'
         ]
         read_only_fields = ['пользователь', 'дата_заказа', 'общая_стоимость']
+        from rest_framework import serializers
+from django.contrib.auth.models import User
+from shop.models import Profile
+
+class ProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source='user.username', read_only=True)
+    email = serializers.CharField(source='user.email')
+    first_name = serializers.CharField(source='user.first_name')
+    last_name = serializers.CharField(source='user.last_name')
+
+    class Meta:
+        model = Profile
+        fields = ['username', 'email', 'first_name', 'last_name', 'phone', 'address', 'city', 'favorite_category', 'is_admin']
+
+    def update(self, instance, validated_data):
+        user_data = validated_data.pop('user', {})
+        if user_data:
+            user = instance.user
+            user.email = user_data.get('email', user.email)
+            user.first_name = user_data.get('first_name', user.first_name)
+            user.last_name = user_data.get('last_name', user.last_name)
+            user.save()
+        
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    password_confirm = serializers.CharField(write_only=True)
+
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'password', 'password_confirm', 'first_name', 'last_name']
+
+    def validate(self, data):
+        if data['password'] != data.pop('password_confirm'):
+            raise serializers.ValidationError("Пароли не совпадают")
+        return data
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data['username'],
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', '')
+        )
+        Profile.objects.create(user=user)
+        return user
