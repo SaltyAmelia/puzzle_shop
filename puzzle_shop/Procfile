@@ -1,2 +1,2 @@
-web: gunicorn puzzle_shop.wsgi
+web: python manage.py collectstatic --noinput && gunicorn puzzle_shop.wsgi:application
 release: python manage.py migrate
