@@ -1,0 +1,111 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+
+{% block title %}Мой профиль - Магазин{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="mb-4">
+                <i class="fas fa-user"></i> Мой профиль
+            </h1>
+
+            <div class="card border-0 shadow mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> Информация о профиле
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form id="profile-form">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Имя</label>
+                                <input type="text" class="form-control" id="first-name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Фамилия</label>
+                                <input type="text" class="form-control" id="last-name">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Телефон</label>
+                            <input type="tel" class="form-control" id="phone">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Адрес</label>
+                            <textarea class="form-control" id="address" rows="3"></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Город</label>
+                            <input type="text" class="form-control" id="city">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-save"></i> Сохранить изменения
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-sign-out-alt"></i> Выход
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <button class="btn btn-danger btn-lg w-100" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> Выйти из аккаунта
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'js/auth.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async function() {
+    const profile = await getProfile();
+    
+    if (!profile) {
+        window.location.href = '/login/';
+        return;
+    }
+
+    document.getElementById('first-name').value = profile.first_name || '';
+    document.getElementById('last-name').value = profile.last_name || '';
+    document.getElementById('email').value = profile.email || '';
+    document.getElementById('phone').value = profile.phone || '';
+    document.getElementById('address').value = profile.address || '';
+    document.getElementById('city').value = profile.city || '';
+
+    document.getElementById('profile-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = {
+            first_name: document.getElementById('first-name').value,
+            last_name: document.getElementById('last-name').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value,
+            city: document.getElementById('city').value,
+        };
+
+        await updateProfile(data);
+    });
+});
+</script>
+
+{% endblock %}
